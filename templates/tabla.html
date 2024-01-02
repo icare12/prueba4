@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filas Adicionales</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .container {
+      margin-top: 50px;
+      position: relative;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+
+    input {
+      width: 50px;
+    }
+
+    .botones-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-filas {
+      margin-bottom: 10px;
+    }
+
+    /* Estilo para las primeras letras de la primera fila */
+    .segunda-tabla tbody tr:first-child td {
+      color: blue;
+    }
+
+    .export-buttons {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 class="text-center">Calculadora de Totales</h1>
+
+    <!-- Primera tabla -->
+    <table class="table table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Monto</th>
+          <th>Suma</th>
+          <th>Resta</th>
+          <th>Multiplicación</th>
+          <th>División</th>
+          <th>Total Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="number" class="form-control" id="monto" oninput="calcularTotal()"></td>
+          <td><input type="number" class="form-control" id="suma" oninput="calcularTotal()"></td>
+          <td><input type="number" class="form-control" id="resta" oninput="calcularTotal()"></td>
+          <td><input type="number" class="form-control" id="multiplicacion" oninput="calcularTotal()"></td>
+          <td><input type="number" class="form-control" id="division" oninput="calcularTotal()"></td>
+          <td><input type="text" class="form-control" id="totalResultado" readonly></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Botones para la segunda tabla -->
+    <div class="botones-container">
+      <div>
+        <button class="btn btn-success btn-filas" onclick="agregarFila()">Agregar Fila</button>
+        <button class="btn btn-danger btn-filas" onclick="quitarFila()">Quitar Fila</button>
+      </div>
+    </div>
+
+    <!-- Segunda tabla -->
+    <div class="segunda-tabla">
+      <table class="table table-bordered">
+        <thead class="thead-dark">
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" class="form-control" id="input1"></td>
+            <td><input type="text" class="form-control" id="input2"></td>
+            <td><input type="text" class="form-control" id="input3"></td>
+            <td><input type="text" class="form-control" id="input4"></td>
+            <td><input type="text" class="form-control" id="input5"></td>
+            <td><input type="text" class="form-control" id="input6"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Export buttons at the bottom -->
+  <div class="container export-buttons">
+    <button class="btn btn-info" onclick="exportAsJPG()">Exportar como JPG</button>
+    <button class="btn btn-info" onclick="exportAsPNG()">Exportar como PNG</button>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+  <script>
+    // Function to save data to localStorage
+    function saveData() {
+      var inputs = document.querySelectorAll('.container input');
+      inputs.forEach(function (input) {
+        localStorage.setItem(input.id, input.value);
+      });
+    }
+
+    // Function to load data from localStorage
+    function loadData() {
+      var inputs = document.querySelectorAll('.container input');
+      inputs.forEach(function (input) {
+        var savedValue = localStorage.getItem(input.id);
+        if (savedValue !== null) {
+          input.value = savedValue;
+        }
+      });
+    }
+
+    // Load data when the page loads
+    window.onload = function () {
+      loadData();
+    };
+
+    // Attach the saveData function to the input's oninput event
+    document.querySelectorAll('.container input').forEach(function (input) {
+      input.addEventListener('input', saveData);
+    });
+
+    function calcularTotal() {
+      var monto = parseFloat(document.getElementById('monto').value) || 0;
+      var suma = parseFloat(document.getElementById('suma').value) || 0;
+      var resta = parseFloat(document.getElementById('resta').value) || 0;
+      var multiplicacion = parseFloat(document.getElementById('multiplicacion').value) || 1;
+      var division = parseFloat(document.getElementById('division').value) || 1;
+
+      var totalResultado = monto + suma - resta;
+
+      if (document.activeElement.id === 'multiplicacion') {
+        totalResultado *= multiplicacion;
+      } else if (document.activeElement.id === 'division' && totalResultado !== 0 && multiplicacion !== 0) {
+        totalResultado = (totalResultado * multiplicacion) / division;
+      }
+
+      document.getElementById('totalResultado').value = totalResultado.toFixed(2);
+    }
+
+    function agregarFila() {
+      var fila = '<tr>';
+      for (var i = 0; i < 6; i++) {
+        fila += '<td><input type="text" class="form-control"></td>';
+      }
+      fila += '</tr>';
+
+      $('.segunda-tabla tbody').append(fila);
+    }
+
+    function quitarFila() {
+      $('.segunda-tabla tbody tr:last-child').remove();
+    }
+
+    function exportAsJPG() {
+      html2canvas(document.querySelector('.container')).then(canvas => {
+        var imgData = canvas.toDataURL('image/jpeg');
+        var link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'export.jpg';
+        link.click();
+      });
+    }
+
+    function exportAsPNG() {
+      html2canvas(document.querySelector('.container')).then(canvas => {
+        var imgData = canvas.toDataURL('image/png');
+        var link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'export.png';
+        link.click();
+      });
+    }
+  </script>
+
+</body>
+</html>

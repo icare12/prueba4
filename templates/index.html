@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Calculadora de Comisiones Icar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4350016661822073"
+     crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-family: 'Roboto', sans-serif;
+            padding-top: 50px;
+        }
+
+        .container {
+            width: 100%;
+            padding: 0 15px;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            width: 90%;
+            max-width: 300px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+
+        select.form-control {
+            width: 90%;
+            max-width: 300px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #resultado {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .alert-improvement {
+            background-color: #bee5eb;
+            border-color: #bee5eb;
+            color: #004085;
+        }
+
+        .footer {
+            padding: 10px 0;
+            background-color: #f8f9fa;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-top: 20px;
+            }
+
+            .form-control {
+                width: 100%;
+                max-width: none;
+            }
+
+            select.form-control {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        /* Estilos para la barra de navegación */
+        .navbar {
+            background-color: #007bff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .navbar-toggler-icon {
+            background-color: #fff;
+        }
+
+        .navbar-nav {
+            margin-left: auto;
+        }
+
+        .nav-item {
+            margin-left: 15px;
+        }
+
+        .nav-link {
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        .navbar-highlight {
+            background-color: #ff6600;
+        }
+    </style>
+</head>
+
+<body class="container">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Bienvenido</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navbar-highlight" href="/calculadora">Calculadora</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navbar-highlight" href="/conversor">Conversor</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navbar-highlight" href="/empresas_para_datos">Empresas para Datos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link navbar-highlight" href="/tabla">Tabla</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <h1 class="my-4">Calculadora de Comisiones Icar software</h1>
+    <form method="POST" onsubmit="return mostrarComision()">
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="ventas">Ventas mensuales:</label>
+            <input type="number" id="ventas" name="ventas" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="tasa">Porcentaje de Comisión:</label>
+            <select id="tasa" name="tasa" class="form-control">
+                <!-- Nuevas tasas porcentuales adicionales -->
+                <option value="0.10">10%</option>
+                <option value="0.15">15%</option>
+                <option value="0.20">20%</option>
+                <option value="0.25">25%</option>
+                <option value="0.30">30%</option>
+                <option value="0.35">35%</option>
+                <option value="0.40">40%</option>
+                <option value="0.45">45%</option>
+                <option value="0.50">50%</option>
+                <option value="0.55">55%</option>
+                <option value="0.60">60%</option>
+                <option value="0.65">65%</option>
+                <option value="0.70">70%</option>
+                <option value="0.75">75%</option>
+                <option value="0.80">80%</option>
+                <option value="0.85">85%</option>
+                <option value="0.90">90%</option>
+                <option value="0.95">95%</option>
+            </select>
+        </div>
+        <input type="submit" value="Calcular Comisión" class="btn btn-primary">
+    </form>
+
+    <div id="resultado" class="alert mt-4" role="alert" style="display: none;">
+        <!-- El resultado se mostrará aquí -->
+    </div>
+
+    <!-- Gráfico de Barras -->
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <div class="btn-group mt-4">
+        <!-- Botón de donativo con ZINLI -->
+        <button onclick="hacerDonativo()" class="btn btn-warning mr-2"><i class="fas fa-donate"></i>donativo<span style="text-decoration: underline;">ZINLI gamersplays33@gmail.com</span></button>
+        <button onclick="exportarResultado('png')" class="btn btn-info mr-2">Exportar PNG</button>
+        <button onclick="exportarResultado('jpg')" class="btn btn-info mr-2">Exportar JPG</button>
+        <button onclick="reiniciarTodo()" class="btn btn-danger">Reiniciar Todo</button>
+    </div>
+
+    <div id="resultadoExportacion" class="mt-4"></div>
+
+    <script>
+        var historicalData = [];
+        var myChart; // Variable para almacenar el gráfico
+
+        function mostrarComision() {
+            var nombre = document.getElementById('nombre').value;
+            var ventas = document.getElementById('ventas').value;
+            var tasa = document.getElementById('tasa').value;
+
+            // Validar si se ingresaron nombre y ventas
+            if (!nombre || !ventas) {
+                alert('Ingrese el nombre y las ventas antes de calcular la comisión.');
+                return false;
+            }
+
+            var comision = parseFloat(ventas) * parseFloat(tasa);
+            var resultadoMensaje = `Hola ${nombre}, tu comisión de este mes es: ${tasa * 100}% - $${comision.toFixed(2)}`;
+
+            // Mostrar el resultado en la página
+            var resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = resultadoMensaje;
+
+            // Ajustar el estilo y mensaje según las ventas
+            if (ventas < 10) {
+                resultadoDiv.className = 'alert alert-improvement mt-4';
+            } else if (ventas > 40) {
+                resultadoDiv.className = 'alert alert-success mt-4';
+            } else {
+                resultadoDiv.className = 'alert alert-warning mt-4';
+            }
+
+            resultadoDiv.style.display = 'block';
+
+            // Agregar el valor al historial para el gráfico
+            historicalData.push(comision);
+
+            // Actualizar el gráfico
+            updateChart();
+
+            // Prevenir el envío del formulario
+            return false;
+        }
+
+        function updateChart() {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var backgroundColors = historicalData.map(value => (value < 10 ? '#bee5eb' : (value > 40 ? '#d4edda' : '#fff3cd')));
+
+            // Destruir el gráfico existente antes de borrar el canvas
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({ length: historicalData.length }, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Desempeño de Comisiones',
+                        data: historicalData,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function exportarResultado(formato) {
+            exportarImagen(formato);
+        }
+
+        function exportarImagen(formato) {
+            var chartCanvas = document.getElementById('myChart');
+            var imgData = chartCanvas.toDataURL('image/' + formato);
+
+            // Crear un elemento 'a' para la descarga
+            var link = document.createElement('a');
+            link.href = imgData;
+            link.download = 'grafico_comisiones.' + formato;
+            link.style.display = 'none';
+
+            // Adjuntar el elemento 'a' al cuerpo y simular clic
+            document.body.appendChild(link);
+            link.click();
+
+            // Eliminar el elemento 'a' después de la descarga
+            document.body.removeChild(link);
+
+            // Mostrar el mensaje de exportación
+            var resultadoExportacionDiv = document.getElementById('resultadoExportacion');
+            resultadoExportacionDiv.innerHTML = `¡Exportación exitosa en formato ${formato.toUpperCase()}!`;
+            resultadoExportacionDiv.style.display = 'block';
+        }
+
+        function reiniciarTodo() {
+            document.getElementById('nombre').value = '';
+            document.getElementById('ventas').value = '';
+            document.getElementById('tasa').value = '0.15';
+
+            var resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.style.display = 'none';
+
+            // Ocultar el mensaje de exportación
+            var resultadoExportacionDiv = document.getElementById('resultadoExportacion');
+            resultadoExportacionDiv.style.display = 'none';
+
+            historicalData = [];
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+
+            // Destruir el gráfico existente antes de borrar el canvas
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+
+        function hacerDonativo() {
+            // Abrir enlace en una nueva pestaña
+            window.open('https://www.zinli.com/', '_blank');
+        }
+    </script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">Copyright &copy; 2023 @icartecnology. Todos los derechos reservados.</span>
+        </div>
+    </footer>
+</body>
+</html>

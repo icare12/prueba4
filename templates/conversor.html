@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Crypto Price Ticker</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      #ticker {
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 10px;
+        background-color: #333;
+      }
+
+      .crypto-container {
+        color: #fff;
+        display: inline-block;
+        margin-right: 20px;
+        font-size: 14px;
+        transition: color 0.3s ease;
+      }
+
+      .crypto-container:hover {
+        color: #f7941d;
+      }
+
+      .crypto-name {
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      #update-info {
+        color: #fff;
+        margin-top: 10px;
+        font-size: 12px;
+      }
+
+      #calculator {
+        margin-top: 20px;
+        background-color: #3498db;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: inline-block;
+      }
+
+      #amount {
+        width: 150px;
+        padding: 8px;
+        box-sizing: border-box;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+
+      #convert-button {
+        width: 100px;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        background-color: #2c3e50;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+      }
+
+      #convert-button:hover {
+        background-color: #1a252f;
+      }
+
+      #result {
+        margin-top: 10px;
+        font-size: 18px;
+        color: #000; /* Cambiado a negro */
+        font-family: 'Helvetica Neue', sans-serif; /* Cambiado la fuente */
+      }
+
+      #crypto-type {
+        width: 150px;
+        padding: 8px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ticker">
+      <div class="crypto-container" id="bitcoin-container">
+        <p class="crypto-price" id="bitcoin-price">Loading...</p>
+        <p class="crypto-name">Bitcoin</p>
+      </div>
+      <div class="crypto-container" id="ethereum-container">
+        <p class="crypto-price" id="ethereum-price">Loading...</p>
+        <p class="crypto-name">Ethereum</p>
+      </div>
+      <div class="crypto-container" id="dogecoin-container">
+        <p class="crypto-price" id="dogecoin-price">Loading...</p>
+        <p class="crypto-name">Dogecoin</p>
+      </div>
+      <p id="update-info">Última actualización: <span id="update-time">-</span></p>
+    </div>
+
+    <div id="calculator">
+      <select id="crypto-type">
+        <option value="bitcoin">Bitcoin</option>
+        <option value="ethereum">Ethereum</option>
+        <option value="dogecoin">Dogecoin</option>
+      </select>
+      <input type="number" id="amount" placeholder="Cantidad">
+      <button id="convert-button">Convertir</button>
+      <p id="result"></p>
+    </div>
+
+
+    <script src="popup.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const updateTimeElement = document.getElementById('update-time');
+        const amountInput = document.getElementById('amount');
+        const convertButton = document.getElementById('convert-button');
+        const resultElement = document.getElementById('result');
+        const cryptoTypeSelect = document.getElementById('crypto-type');
+
+        const cryptoPrices = {
+          bitcoin: 0,
+          ethereum: 0,
+          dogecoin: 0,
+        };
+
+        function fetchCryptoPrices() {
+          // Fetch de precios solo para mostrar en el ticker
+          fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,dogecoin&vs_currencies=usd')
+            .then(response => response.json())
+            .then(data => {
+              const bitcoinPriceElement = document.getElementById('bitcoin-price');
+              const ethereumPriceElement = document.getElementById('ethereum-price');
+              const dogecoinPriceElement = document.getElementById('dogecoin-price');
+
+              cryptoPrices.bitcoin = data.bitcoin.usd;
+              cryptoPrices.ethereum = data.ethereum.usd;
+              cryptoPrices.dogecoin = data.dogecoin.usd;
+
+              bitcoinPriceElement.textContent = `$${cryptoPrices.bitcoin}`;
+              ethereumPriceElement.textContent = `$${cryptoPrices.ethereum}`;
+              dogecoinPriceElement.textContent = `$${cryptoPrices.dogecoin}`;
+              updateInfo();
+            })
+            .catch(error => console.error('Error fetching crypto prices:', error));
+        }
+
+        function updateInfo() {
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const seconds = now.getSeconds().toString().padStart(2, '0');
+          const updateTime = `${hours}:${minutes}:${seconds}`;
+          updateTimeElement.textContent = updateTime;
+        }
+
+        function convertAndDisplayResult() {
+          const selectedCrypto = cryptoTypeSelect.value;
+          const amount = parseFloat(amountInput.value);
+
+          if (!isNaN(amount) && cryptoPrices[selectedCrypto]) {
+            const result = (cryptoPrices[selectedCrypto] * amount).toFixed(2);
+            resultElement.textContent = `$${result} USD`;
+          } else {
+            resultElement.textContent = 'Ingrese una cantidad válida o seleccione una criptomoneda.';
+          }
+        }
+
+        convertButton.addEventListener('click', convertAndDisplayResult);
+
+        fetchCryptoPrices();
+        setInterval(fetchCryptoPrices, 10000); // Actualizar cada 10 segundos para demostración
+        startClock();
+      });
+
+      function startClock() {
+        const updateTimeElement = document.getElementById('update-time');
+        setInterval(function() {
+          const now = new Date();
+          const hours = now.getHours().toString().padStart(2, '0');
+          const minutes = now.getMinutes().toString().padStart(2, '0');
+          const seconds = now.getSeconds().toString().padStart(2, '0');
+          const updateTime = `${hours}:${minutes}:${seconds}`;
+          updateTimeElement.textContent = updateTime;
+        }, 1000); // Actualizar cada segundo
+      }
+    </script>
+    <div class="container mt-4">
+    <div class="jumbotron text-center">
+      <h1 class="display-4">¡Mantente al día con las tres principales criptomonedas!</h1>
+      <p class="lead">Bitcoin es la primera criptomoneda y sigue siendo la más valiosa y reconocida</p>
+      <p class="lead">Almacenamiento de valor y medio de intercambio digital. Muchos inversores lo ven como un equivalente digital al oro.</p>
+      <hr class="my-4">
+      <p>Utiliza nuestras secciones como prefieras para impulsar tu empresa, emprendimiento o análisis. Estamos aquí para apoyarte en cada paso. ¡Gracias por elegirnos!</p>
+      <p class="lead">
+        <span class="font-weight-bold">Cordialmente,</span><br>
+        <span class="font-italic">@icartecnology</span>
+      </p>
+    </div>
+  </div>
+  </body>
+</html>

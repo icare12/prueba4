@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hoja de Cálculo</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+  /* Estilos generales de la calculadora */
+.calculator-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  background-color: #fff;
+  border: 2px solid #3498db;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: move;
+  user-select: none;
+  z-index: 1;
+  overflow: hidden; /* Evita que los elementos desborden el contenedor */
+}
+
+.calculator-header {
+  padding: 15px;
+  background-color: #3498db;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+  cursor: move;
+  text-align: center;
+  font-size: 18px;
+}
+
+/* Estilos de los botones */
+.calculator-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 10px;
+}
+
+.calculator-button {
+  background-color: #2ecc71;
+  color: #fff;
+  border: none;
+  padding: 15px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%; /* Ajusta el ancho al 100% para ocupar toda la cuadrícula */
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+}
+
+.calculator-button:hover {
+  background-color: #27ae60;
+}
+
+/* Estilos del campo de entrada y resultado */
+.calculator-input,
+.calculator-result {
+  width: calc(100% - 20px);
+  padding: 15px;
+  margin: 10px;
+  border: 2px solid #3498db;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 18px;
+  text-align: right;
+}
+
+/* Estilos de los botones adicionales */
+.calculator-button-primary {
+  background-color: #3498db;
+}
+
+.calculator-button-primary:hover {
+  background-color: #2980b9;
+}
+
+.calculator-button-danger {
+  background-color: #e74c3c;
+}
+
+.calculator-button-danger:hover {
+  background-color: #c0392b;
+}
+    /* Estilo para centrar las vocales en las columnas */
+    #tabla th, #tabla td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* Estilo para la tabla */
+    #tabla {
+      margin-bottom: 50px;
+      /* Ajuste de margen para evitar solapamiento con la calculadora */
+    }
+
+    /* Estilo para los botones de agregar/quitar filas y exportar */
+    .action-buttons {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container mt-4">
+    <table id="tabla" class="table">
+      <!-- Filas iniciales -->
+      <thead>
+        <tr>
+          <th>A</th>
+          <th>B</th>
+          <th>C</th>
+          <th>D</th>
+          <th>E</th>
+          <th>F</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Se agregarán 12 filas al cargar la página -->
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            for (var i = 0; i < 12; i++) {
+              agregarFila();
+            }
+          });
+        </script>
+      </tbody>
+    </table>
+
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+      <button class="btn btn-primary mr-2" onclick="agregarFila()">Agregar Fila</button>
+      <button class="btn btn-secondary mr-2" onclick="reiniciar()">Reiniciar</button>
+      <button class="btn btn-success mr-2" onclick="exportarPNG()">Exportar PNG</button>
+      <button class="btn btn-info mr-2" onclick="exportarJPG()">Exportar JPG</button>
+      <button class="btn btn-warning" onclick="quitarFila()">Quitar Fila</button>
+    </div>
+
+    <!-- Contenedor de la calculadora -->
+    <div id="calculator" class="calculator-container">
+      <div class="calculator-header">Calculadora</div>
+      <input class="calculator-input" type="text" id="calcInput" readonly>
+      <div class="calculator-result" id="calcResult"></div>
+      <div class="calculator-buttons">
+        <button class="calculator-button calculator-button-danger" onclick="borrar()">C</button>
+        <button class="calculator-button" onclick="agregarNumero('7')">7</button>
+        <button class="calculator-button" onclick="agregarNumero('8')">8</button>
+        <button class="calculator-button calculator-button-primary" onclick="agregarOperador('+')">+</button>
+        <button class="calculator-button" onclick="agregarNumero('4')">4</button>
+        <button class="calculator-button" onclick="agregarNumero('5')">5</button>
+        <button class="calculator-button" onclick="agregarNumero('6')">6</button>
+        <button class="calculator-button calculator-button-primary" onclick="agregarOperador('-')">-</button>
+        <button class="calculator-button" onclick="agregarNumero('1')">1</button>
+        <button class="calculator-button" onclick="agregarNumero('2')">2</button>
+        <button class="calculator-button" onclick="agregarNumero('3')">3</button>
+        <button class="calculator-button calculator-button-primary" onclick="agregarOperador('*')">*</button>
+        <button class="calculator-button" onclick="agregarNumero('0')">0</button>
+        <button class="calculator-button calculator-button-primary" onclick="calcular()">=</button>
+        <button class="calculator-button calculator-button-primary" onclick="agregarOperador('/')">/</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var offsetX, offsetY;
+    var isDragging = false;
+
+    // Iniciar el arrastre
+    function startDrag(e) {
+      e.preventDefault();
+      offsetX = e.clientX - document.getElementById('calculator').getBoundingClientRect().left;
+      offsetY = e.clientY - document.getElementById('calculator').getBoundingClientRect().top;
+      isDragging = true;
+    }
+
+    // Realizar el arrastre
+    function doDrag(e) {
+      if (isDragging) {
+        var x = e.clientX - offsetX;
+        var y = e.clientY - offsetY;
+        document.getElementById('calculator').style.left = x + 'px';
+        document.getElementById('calculator').style.top = y + 'px';
+      }
+    }
+
+    // Detener el arrastre
+    function stopDrag() {
+      isDragging = false;
+    }
+
+    document.getElementById('calculator').addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
+
+    var operando1 = '';
+    var operando2 = '';
+    var operador = '';
+    var resultadoMostrado = false;
+
+    function agregarNumero(numero) {
+      if (resultadoMostrado) {
+        borrar();
+        resultadoMostrado = false;
+      }
+
+      if (operador === '') {
+        operando1 += numero;
+      } else {
+        operando2 += numero;
+      }
+      actualizarPantalla();
+    }
+
+    function agregarOperador(op) {
+      if (operando1 !== '' && !resultadoMostrado) {
+        operador = op;
+        actualizarPantalla();
+      }
+    }
+
+    function borrar() {
+      operando1 = '';
+      operando2 = '';
+      operador = '';
+      resultadoMostrado = false;
+      actualizarPantalla();
+    }
+
+    function calcular() {
+      if (operando1 !== '' && operando2 !== '' && operador !== '') {
+        var resultado;
+        switch (operador) {
+          case '+':
+            resultado = parseFloat(operando1) + parseFloat(operando2);
+            break;
+          case '-':
+            resultado = parseFloat(operando1) - parseFloat(operando2);
+            break;
+          case '*':
+            resultado = parseFloat(operando1) * parseFloat(operando2);
+            break;
+          case '/':
+            if (parseFloat(operando2) !== 0) {
+              resultado = parseFloat(operando1) / parseFloat(operando2);
+            } else {
+              resultado = 'Error: División por cero';
+            }
+            break;
+          default:
+            resultado = 'Error';
+        }
+        borrar();
+        operando1 = resultado.toString();
+        actualizarPantalla();
+        resultadoMostrado = true;
+      }
+    }
+
+    function actualizarPantalla() {
+      var pantalla = document.getElementById('calcInput');
+      pantalla.value = operando1 + ' ' + operador + ' ' + operando2;
+
+      var resultado = document.getElementById('calcResult');
+      resultado.textContent = '';
+      if (operando1 !== '' && operando2 !== '' && operador !== '' && resultadoMostrado) {
+        resultado.textContent = 'Resultado: ' + operando1 + ' ' + operador + ' ' + operando2;
+      }
+    }
+
+    // Funciones para la hoja de cálculo
+    function agregarFila() {
+      var tabla = document.getElementById('tabla');
+      var nuevaFila = tabla.insertRow(-1);
+      for (var i = 0; i < 6; i++) {
+        var celda = nuevaFila.insertCell(i);
+        celda.innerHTML = '<input type="text" class="form-control">';
+      }
+    }
+
+    function quitarFila() {
+      var tabla = document.getElementById('tabla');
+      if (tabla.rows.length > 1) {
+        tabla.deleteRow(-1);
+      }
+    }
+
+    function reiniciar() {
+      var tabla = document.getElementById('tabla');
+      tabla.innerHTML = '<thead><tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr></thead><tbody></tbody>';
+    }
+
+    function exportarPNG() {
+      html2canvas(document.getElementById('tabla')).then(function (canvas) {
+        var imgData = canvas.toDataURL('image/png');
+        var link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'tabla.png';
+        link.click();
+      });
+    }
+
+    function exportarJPG() {
+      html2canvas(document.getElementById('tabla')).then(function (canvas) {
+        var imgData = canvas.toDataURL('image/jpeg');
+        var link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'tabla.jpg';
+        link.click();
+      });
+    }
+  </script>
+
+</body>
+
+</html>
+
+
+
